@@ -1,9 +1,6 @@
 var console = console || {
     log: function(msg){
-        var d = document.createElement("div");
-        var text = document.createTextNode(msg);
-        d.appendChild(text);
-        document.body.appendChild(d);
+        
     }
 };
 
@@ -18,7 +15,7 @@ var clientLibraryManager = (function(jq,sources,specs){
         }
     };
     
-    var scripts = [];
+    var loadedScripts = [];
     function loadScript(src, callback) {
         var s = document.createElement('script');
         s.type = 'text/javascript';
@@ -36,17 +33,17 @@ var clientLibraryManager = (function(jq,sources,specs){
         };
     
         // use body if available. more safe in IE
-        if(scripts.indexOf(src)<0){
-            scripts.push(src);
-            var head = document.head || document.body;
+        if(jq.inArray(src,loadedScripts<0)){
+            loadedScripts.push(src);
+            var head = document.body || document.head;
             head.appendChild(s);
         }
     }
     
     function JSLibrary(path,txtContent,xmlContent){
-        var categories = toJSArray(xmlContent.getAttribute('categories'));
+        var categories = toJSArray(xmlContent.attr('categories'));
         console.log('JSLibrary categories: '+categories.join(','));
-        var dependencies = xmlContent.getAttribute('dependencies');
+        var dependencies = xmlContent.attr('dependencies');
         var hasDependencies = false;
         if(typeof dependencies !== 'undefined'){
             dependencies = toJSArray(dependencies);
@@ -75,7 +72,7 @@ var clientLibraryManager = (function(jq,sources,specs){
             loadedFiles: [],
             isA: function(categoryName){
                 console.log('IsA for: '+categoryName+':'+this.categories.join(','));
-                return categories.indexOf(categoryName)>=0;
+                return jq.inArray(categoryName,categories)>=0;
             },
             load: function(callback){
                 if(this.loaded){
@@ -158,9 +155,10 @@ var clientLibraryManager = (function(jq,sources,specs){
             jq.get(source, function(txtContent){
                 var contentXml = source.replace('js.txt','.content.xml');
                 var path = source.replace('/js\.txt','')
-                jq.get(contentXml, function(data){
-                    console.log('Data from load: '+data.firstChild.getAttribute('categories'));
-                    var xmlContent = data.firstChild;
+                jq.get(contentXml, function(data,status,response){
+                    var jqData = jq(response.responseText).last();
+                    console.log('Data from load: '+jqData.attr('categories'));
+                    var xmlContent = jqData;
                     var jsLibrary = new JSLibrary(path,txtContent,xmlContent);
                     jsLibraries.push(jsLibrary);
                     
