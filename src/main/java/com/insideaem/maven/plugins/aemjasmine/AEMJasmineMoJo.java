@@ -1,14 +1,12 @@
 package com.insideaem.maven.plugins.aemjasmine;
 
 import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.logging.Log;
+import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
@@ -30,7 +28,7 @@ import org.codehaus.plexus.util.DirectoryScanner;
  * limitations under the License.
  */
 
-@Mojo(name = "runner")
+@Mojo(name = "test", defaultPhase = LifecyclePhase.TEST)
 public final class AEMJasmineMoJo extends AbstractMojo {
 	/**
 	 * Location to generate the runner file.
@@ -54,31 +52,9 @@ public final class AEMJasmineMoJo extends AbstractMojo {
 
 	@SuppressWarnings("unchecked")
 	public void execute() {
-		File f = runnerOutputDirectory;
-
-		if (!f.exists()) {
-			f.mkdirs();
-		}
-
-		File touch = new File(f, "touch.txt");
-
-		FileWriter w = null;
-		try {
-			this.scan(this.project.getBasedir());
-			w = new FileWriter(touch);
-
-			w.write("touch.txt --> " + new Date());
-		} catch (Exception e) {
-			this.getLog().error(e);
-		} finally {
-			if (w != null) {
-				try {
-					w.close();
-				} catch (IOException e) {
-					// ignore
-				}
-			}
-		}
+		project.getProperties().put("jasmine.sourceIncludes",
+				"**/js.txt,**/a.js,**/b.js,**/c.js");
+		this.getLog().info("----> jasmine.sourceIncludes property set");
 	}
 
 	/**
